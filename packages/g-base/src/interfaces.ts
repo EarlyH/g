@@ -1,4 +1,5 @@
-import { BBox, ShapeCfg, GroupCfg, ClipCfg, Point } from './types';
+import { ShapeCfg, GroupCfg, ClipCfg, Point, ChangeType, AnimateCfg, ElementAttrs, OnFrame } from './types';
+import BBox from './bbox';
 
 export interface ICtor<T> {
   new (cfg: any): T;
@@ -94,9 +95,9 @@ export interface IElement extends IBase {
   /**
    * 当引擎画布变化时，可以调用这个方法，告知 canvas 图形属性发生了改变
    * 这个方法一般不要直接调用，在实现 element 的继承类时可以复写
-   * @param {string} changeType [description]
+   * @param {ChangeType} changeType 改变的类型
    */
-  onCanvasChange(changeType: string);
+  onCanvasChange(changeType: ChangeType);
 
   /**
    * 是否是分组
@@ -185,19 +186,50 @@ export interface IElement extends IBase {
   invertFromMatrix(v: number[]);
 
   /**
-   * 执行动画
-   * @param  {Object}   toProps  动画最终状态
-   * @param  {Number}   [duration] 动画执行时间
-   * @param  {String}   [easing]   动画缓动效果
-   * @param  {Function} [callback] 动画执行后的回调
-   * @param  {Number}   [delay]    动画延迟时间
+   * 是否处于动画暂停状态
+   * @return {boolean} 是否处于动画暂停状态
    */
-  animate(toProps, duration?: number, easing?: string, callback?: Function, delay?: number);
+  isAnimatePaused();
+
+  /**
+   * 执行动画
+   * @param {ElementAttrs} toAttrs 动画最终状态
+   * @param {number}       duration 动画执行时间
+   * @param {string}       easing 动画缓动效果
+   * @param {function}     callback 动画执行后的回调
+   * @param {number}       delay 动画延迟时间
+   */
+  animate(toAttrs: ElementAttrs, duration: number, easing?: string, callback?: Function, delay?: number);
+
+  /**
+   * 执行动画
+   * @param {OnFrame}  onFrame  自定义帧动画函数
+   * @param {number}   duration 动画执行时间
+   * @param {string}   easing   动画缓动效果
+   * @param {function} callback 动画执行后的回调
+   * @param {number}   delay    动画延迟时间
+   */
+  animate(onFrame: OnFrame, duration: number, easing?: string, callback?: Function, delay?: number);
+
+  /**
+   * 执行动画
+   * @param {ElementAttrs} toAttrs 动画最终状态
+   * @param {AnimateCfg}   cfg     动画配置
+   */
+  animate(toAttrs, cfg: AnimateCfg);
+
+  /**
+   * 执行动画
+   * @param {OnFrame}    onFrame 自定义帧动画函数
+   * @param {AnimateCfg} cfg     动画配置
+   */
+  animate(onFrame, cfg: AnimateCfg);
 
   /**
    * 停止图形的动画
+   * @param {boolean} toEnd 是否到动画的最终状态
    */
-  stopAnimate();
+  stopAnimate(toEnd?: boolean);
 
   /**
    * 暂停图形的动画
@@ -292,6 +324,11 @@ export interface IContainer extends IBase {
    */
   add(element: IElement);
   /**
+   * 获取父元素
+   * @return {IContainer} 父元素一般是 Group 或者是 Canvas
+   */
+  getParent(): IContainer;
+  /**
    * 获取所有的子元素
    * @return {IElement[]} 子元素的集合
    */
@@ -306,7 +343,13 @@ export interface IContainer extends IBase {
   clear();
 }
 
-export interface IGroup extends IElement, IContainer {}
+export interface IGroup extends IElement, IContainer {
+  /**
+   * 是否是实体分组，即对应实际的渲染元素
+   * @return {boolean} 是否是实体分组
+   */
+  isEntityGroup(): boolean;
+}
 
 export interface IShape extends IElement {
   /**

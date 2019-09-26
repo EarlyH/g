@@ -1,12 +1,12 @@
 import { IContainer, ICtor, IShape, IGroup, IElement } from '../interfaces';
-import { BBox } from '../types';
+import BBox from '../bbox';
 import Element from './element';
 import ContainerUtil from '../util/container';
 import { isObject, each } from '../util/util';
 
 function afterAdd(element: IElement) {
   if (element.isGroup()) {
-    if (element.get('children').length) {
+    if ((element as IGroup).isEntityGroup() || element.get('children').length) {
       element.onCanvasChange('add');
     }
   } else {
@@ -69,18 +69,7 @@ abstract class Container extends Element implements IContainer {
       minY = 0;
       maxY = 0;
     }
-
-    const box = {
-      x: minX,
-      y: minY,
-      minX,
-      minY,
-      maxX,
-      maxY,
-      width: maxX - minX,
-      height: maxY - minY,
-    };
-    return box;
+    return BBox.fromRange(minX, minY, maxX, maxY);
   }
 
   // 获取画布的包围盒
@@ -114,18 +103,7 @@ abstract class Container extends Element implements IContainer {
       minY = 0;
       maxY = 0;
     }
-
-    const box = {
-      x: minX,
-      y: minY,
-      minX,
-      minY,
-      maxX,
-      maxY,
-      width: maxX - minX,
-      height: maxY - minY,
-    };
-    return box;
+    return BBox.fromRange(minX, minY, maxX, maxY);
   }
 
   abstract getShapeBase(): ICtor<IShape>;
@@ -156,6 +134,8 @@ abstract class Container extends Element implements IContainer {
   addGroup(...args): IGroup {
     const [groupClass, cfg] = args;
     const group = ContainerUtil.addGroup(this, groupClass, cfg);
+    // Group maybe a real element
+    afterAdd(group);
     this._applyElementMatrix(group);
     return group;
   }

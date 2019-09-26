@@ -1,11 +1,14 @@
 import { IGroup } from '../interfaces';
-import { GroupCfg, ShapeCfg, BBox } from '../types';
 import Container from './container';
 import { each } from '../util/util';
 
 abstract class AbstractGroup extends Container implements IGroup {
   isGroup() {
     return true;
+  }
+
+  isEntityGroup() {
+    return false;
   }
 
   onAttrChange(name, value, originValue) {

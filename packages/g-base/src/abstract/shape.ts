@@ -1,5 +1,6 @@
 import { IShape } from '../interfaces';
-import { ShapeCfg, BBox } from '../types';
+import { ShapeCfg, ShapeAttrs } from '../types';
+import BBox from '../bbox';
 import Element from './element';
 import { each, isArray } from '../util/util';
 import { multiplyVec2 } from '../util/matrix';
@@ -17,9 +18,10 @@ abstract class AbstractShape extends Element implements IShape {
   /**
    * 属性更改后需要做的事情
    * @protected
+   * @param {ShapeAttrs} targetAttrs 渲染的图像属性
    */
-  afterAttrsChange() {
-    super.afterAttrsChange();
+  afterAttrsChange(targetAttrs: ShapeAttrs) {
+    super.afterAttrsChange(targetAttrs);
     this.clearCacheBBox();
   }
   // 计算包围盒时，需要缓存，这是一个高频的操作
@@ -72,16 +74,7 @@ abstract class AbstractShape extends Element implements IShape {
     const maxX = Math.max(topLeft[0], topRight[0], bottomLeft[0], bottomRight[0]);
     const minY = Math.min(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]);
     const maxY = Math.max(topLeft[1], topRight[1], bottomLeft[1], bottomRight[1]);
-    return {
-      x: minX,
-      y: minY,
-      minX,
-      minY,
-      maxX,
-      maxY,
-      width: maxX - minX,
-      height: maxY - minY,
-    };
+    return BBox.fromRange(minX, minY, maxX, maxY);
   }
 
   /**
