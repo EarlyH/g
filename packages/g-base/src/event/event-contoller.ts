@@ -92,10 +92,14 @@ function emitDelegation(container, type, eventObj) {
     const name = element.get('name');
     if (name) {
       const eventName = name + DELEGATION_SPLIT + type;
+      // 不同的事件委托拥有独立的 eventObj 对象
+      const newEventObj = {
+        ...eventObj,
+      };
       if (events[eventName]) {
-        eventObj.delegateTarget = container;
-        eventObj.currentTarget = element;
-        container.emit(eventName, eventObj);
+        newEventObj.delegateTarget = container;
+        newEventObj.currentTarget = element;
+        container.emit(eventName, newEventObj);
       }
     }
   }
@@ -123,9 +127,13 @@ function bubbleEvent(container, type, eventObj) {
       eventObj.bubbles = false;
       return;
     }
+    // 不同的事件冒泡拥有独立的 eventObj 对象
+    const newEventObj = {
+      ...eventObj,
+    };
     // 绑定事件的对象
-    eventObj.currentTarget = container;
-    container.emit(type, eventObj);
+    newEventObj.currentTarget = container;
+    container.emit(type, newEventObj);
   }
 }
 

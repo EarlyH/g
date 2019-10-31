@@ -85,7 +85,7 @@ describe('test event object', () => {
     expect(event.defaultPrevented).eql(true);
   });
 
-  it('stopProgation', () => {
+  it('stopPropagation', () => {
     event.stopPropagation();
     expect(event.propagationStopped).eql(true);
   });
@@ -829,7 +829,7 @@ describe('test graphic events', () => {
     group1.set('name', null);
   });
 
-  it('stopProgation', () => {
+  it('stopPropagation', () => {
     let group1Called = false;
     let group11Called = false;
     let canvasCalled = false;
@@ -853,6 +853,7 @@ describe('test graphic events', () => {
     });
     let current;
     group1.set('name', 'my-name');
+    // 由于 group11 阻止了事件冒泡，因此 group1 上不会触发 click 事件
     canvas.on('my-name:click', (ev) => {
       current = ev.currentTarget;
       delegateCalled = true;
@@ -881,8 +882,8 @@ describe('test graphic events', () => {
 
     expect(group1Called).eql(false);
     expect(canvasCalled).eql(false);
-    expect(delegateCalled).eql(true);
-    expect(current).eql(group1);
+    expect(delegateCalled).eql(false);
+    expect(current).eql(undefined);
     canvas.off();
     group1.off();
     shape4.off();
